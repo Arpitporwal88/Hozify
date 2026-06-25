@@ -10,10 +10,14 @@ namespace Hozify.Infrastructure.Services;
 public class AuthService : IAuthService
 {
     private readonly HozifyDbContext _context;
+    private readonly IJwtService _jwtService;
 
-    public AuthService(HozifyDbContext context)
+    public AuthService(
+    HozifyDbContext context,
+    IJwtService jwtService)
     {
         _context = context;
+        _jwtService = jwtService;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
@@ -75,8 +79,11 @@ public class AuthService : IAuthService
             };
         }
 
+        var token = _jwtService.GenerateToken(user);
+
         return new AuthResponseDto
         {
+            Token = token,
             Message = "Login Successful"
         };
     }
