@@ -1,0 +1,6 @@
+@Hozify.API_HostAddress = http://localhost:5211
+
+GET {{Hozify.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
