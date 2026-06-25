@@ -52,6 +52,32 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto request)
     {
-        throw new NotImplementedException();
+        var user = await _context.Users
+            .FirstOrDefaultAsync(x => x.Email == request.Email);
+
+        if (user == null)
+        {
+            return new AuthResponseDto
+            {
+                Message = "Invalid Email Please check your Email"
+            };
+        }
+
+        bool isPasswordValid = BCrypt.Net.BCrypt.Verify(
+            request.Password,
+            user.PasswordHash);
+
+        if (!isPasswordValid)
+        {
+            return new AuthResponseDto
+            {
+                Message = "Invalid Password Please check your Password"
+            };
+        }
+
+        return new AuthResponseDto
+        {
+            Message = "Login Successful"
+        };
     }
 }
