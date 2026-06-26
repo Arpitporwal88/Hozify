@@ -13,4 +13,5 @@ public class HozifyDbContext : DbContext
     public DbSet<User> Users => Set<User>();
 
     public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Category> Categories { get; set; }
 }
