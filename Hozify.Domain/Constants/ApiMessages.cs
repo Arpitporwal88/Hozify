@@ -5,6 +5,8 @@ public static class ApiMessages
     // Common
     public const string Success = "Request completed successfully.";
     public const string Failed = "Request failed.";
+    public const string ValidationFailed = "Validation failed.";
+    public const string InternalServerError = "An unexpected error occurred.";
 
     // Authentication
     public const string RegistrationSuccess = "Registration successful.";
@@ -17,4 +19,7 @@ public static class ApiMessages
     public const string CategoryDeleted = "Category deleted successfully.";
     public const string CategoryNotFound = "Category not found.";
     public const string CategoryAlreadyExists = "Category already exists.";
+    public const string CategoryAlreadyActive = "Category is already active.";
+    public const string CategoryRestored = "Category restored successfully.";
+
 }

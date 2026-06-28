@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Hozify.Application.Common;
-using Hozify.Application.Features.Category.DTOs;
-using Hozify.Application.Features.Category.Interfaces;
+using Hozify.Application.Features.Categories.DTOs;
+using Hozify.Application.Features.Categories.Interfaces;
 using Hozify.Domain.Constants;
 using Hozify.Domain.Entities;
 using Hozify.Domain.Enums;
@@ -51,23 +51,132 @@ public class CategoryService : ICategoryService
             ApiStatusCode.Created);
     }
 
-    public Task<ApiResponse<bool>> DeleteCategoryAsync(int categoryId)
+    public async Task<ApiResponse<List<CategoryResponseDto>>> GetAllCategoriesAsync()
     {
-        throw new NotImplementedException();
+        //throw new Exception("Testing Exception Middleware");
+        var categories = await _context.Categories
+            .Where(c => !c.IsDeleted)
+            .ToListAsync();
+
+        var response = _mapper.Map<List<CategoryResponseDto>>(categories);
+
+        return ResponseFactory.Success(
+            response,
+            ApiMessages.Success,
+            ApiStatusCode.OK);
     }
 
-    public Task<ApiResponse<List<CategoryResponseDto>>> GetAllCategoriesAsync()
+    public async Task<ApiResponse<CategoryResponseDto>> GetCategoryByIdAsync(int categoryId)
     {
-        throw new NotImplementedException();
+        var category = await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == categoryId && !c.IsDeleted);
+
+        if (category == null)
+        {
+            return ResponseFactory.Failure<CategoryResponseDto>(
+                ApiMessages.CategoryNotFound,
+                ApiStatusCode.NotFound);
+        }
+
+        var response = _mapper.Map<CategoryResponseDto>(category);
+
+        return ResponseFactory.Success(
+            response,
+            ApiMessages.Success,
+            ApiStatusCode.OK);
     }
 
-    public Task<ApiResponse<CategoryResponseDto>> GetCategoryByIdAsync(int categoryId)
+    public async Task<ApiResponse<CategoryResponseDto>> UpdateCategoryAsync(int categoryId, UpdateCategoryDto request)
     {
-        throw new NotImplementedException();
+        var category = await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == categoryId && !c.IsDeleted);
+
+        if (category == null)
+        {
+            return ResponseFactory.Failure<CategoryResponseDto>(
+                ApiMessages.CategoryNotFound,
+                ApiStatusCode.NotFound);
+        }
+
+        request.Name = request.Name.Trim();
+
+        var existingCategory = await _context.Categories
+            .FirstOrDefaultAsync(c =>
+                c.Name == request.Name &&
+                c.Id != categoryId &&
+                !c.IsDeleted);
+
+        if (existingCategory != null)
+        {
+            return ResponseFactory.Failure<CategoryResponseDto>(
+                ApiMessages.CategoryAlreadyExists,
+                ApiStatusCode.Conflict);
+        }
+
+        _mapper.Map(request, category);
+
+        category.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        var response = _mapper.Map<CategoryResponseDto>(category);
+
+        return ResponseFactory.Success(
+            response,
+            ApiMessages.CategoryUpdated,
+            ApiStatusCode.OK);
+    }
+    public async Task<ApiResponse<bool>> DeleteCategoryAsync(int categoryId)
+    {
+        var category = await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == categoryId && !c.IsDeleted);
+
+        if (category == null)
+        {
+            return ResponseFactory.Failure<bool>(
+                ApiMessages.CategoryNotFound,
+                ApiStatusCode.NotFound);
+        }
+
+        category.IsDeleted = true;
+        category.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return ResponseFactory.Success(
+            true,
+            ApiMessages.CategoryDeleted,
+            ApiStatusCode.OK);
     }
 
-    public Task<ApiResponse<CategoryResponseDto>> UpdateCategoryAsync(int categoryId, UpdateCategoryDto request)
+    public async Task<ApiResponse<bool>> RestoreCategoryAsync(int categoryId)
     {
-        throw new NotImplementedException();
+        var category = await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == categoryId);
+
+        if (category == null)
+        {
+            return ResponseFactory.Failure<bool>(
+                ApiMessages.CategoryNotFound,
+                ApiStatusCode.NotFound);
+        }
+
+        if (!category.IsDeleted)
+        {
+            return ResponseFactory.Failure<bool>(
+                ApiMessages.CategoryAlreadyActive,
+                ApiStatusCode.BadRequest);
+        }
+
+        category.IsDeleted = false;
+        category.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return ResponseFactory.Success(
+            true,
+            ApiMessages.CategoryRestored,
+            ApiStatusCode.OK);
     }
+
 }

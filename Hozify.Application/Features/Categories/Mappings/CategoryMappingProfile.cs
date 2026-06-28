@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
-using Hozify.Application.Features.Category.DTOs;
+using Hozify.Application.Features.Categories.DTOs;
 using Hozify.Domain.Entities;
 
-namespace Hozify.Application.Mapping;
+namespace Hozify.Application.Features.Categories.Mappings;
 
-public class MappingProfile : Profile
+public class CategoryMappingProfile : Profile
 {
-    public MappingProfile()
+    public CategoryMappingProfile()
     {
         CreateMap<CreateCategoryDto, Category>();
 

@@ -1,7 +1,7 @@
 ﻿using Hozify.Application.Common;
-using Hozify.Application.Features.Category.DTOs;
+using Hozify.Application.Features.Categories.DTOs;
 
-namespace Hozify.Application.Features.Category.Interfaces;
+namespace Hozify.Application.Features.Categories.Interfaces;
 
 public interface ICategoryService
 {
@@ -14,4 +14,6 @@ public interface ICategoryService
     Task<ApiResponse<CategoryResponseDto>> UpdateCategoryAsync(int categoryId, UpdateCategoryDto request);
 
     Task<ApiResponse<bool>> DeleteCategoryAsync(int categoryId);
+
+    Task<ApiResponse<bool>> RestoreCategoryAsync(int categoryId);
 }

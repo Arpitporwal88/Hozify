@@ -1,6 +1,4 @@
-﻿namespace Hozify.Application.Common;
-
-public class ApiResponse<T>
+﻿public class ApiResponse<T>
 {
     public int StatusCode { get; set; }
 
@@ -9,4 +7,6 @@ public class ApiResponse<T>
     public string Message { get; set; } = string.Empty;
 
     public T? Data { get; set; }
+
+    public Dictionary<string, string[]>? Errors { get; set; }
 }

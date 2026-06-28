@@ -1,9 +1,16 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Hozify.API.Middleware;
 using Hozify.Application.Features.Auth.Interfaces;
-using Hozify.Application.Features.Category.Interfaces;
-using Hozify.Application.Mapping;
+using Hozify.Application.Features.Categories.Interfaces;
+using Hozify.Application.Features.Categories.Mappings;
+using Hozify.Application.Features.Categories.Validators;
+using Hozify.Domain.Constants;
+using Hozify.Domain.Enums;
 using Hozify.Infrastructure.Data;
 using Hozify.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -15,7 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddAutoMapper(typeof(CategoryMappingProfile).Assembly);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -38,6 +45,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryValidator>();
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(x => x.Value?.Errors.Count > 0)
+            .ToDictionary(
+                x => char.ToLowerInvariant(x.Key[0]) + x.Key.Substring(1),
+                x => x.Value!.Errors
+                    .Select(e => e.ErrorMessage)
+                    .ToArray());
+
+        var response = new ApiResponse<object>
+        {
+            StatusCode = (int)ApiStatusCode.BadRequest,
+            Success = false,
+            Message = ApiMessages.ValidationFailed,
+            Data = null,
+            Errors = errors
+        };
+
+        return new BadRequestObjectResult(response);
+    };
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -82,7 +117,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

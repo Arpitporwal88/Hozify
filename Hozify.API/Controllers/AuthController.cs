@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace Hozify.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
