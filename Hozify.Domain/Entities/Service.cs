@@ -2,7 +2,7 @@
 
 namespace Hozify.Domain.Entities;
 
-public class Category : BaseEntity
+public class Service : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
 
@@ -12,6 +12,9 @@ public class Category : BaseEntity
 
     public bool IsActive { get; set; } = true;
 
+    // Foreign Key
+    public int CategoryId { get; set; }
+
     // Navigation Property
-    public ICollection<Service> Services { get; set; } = new List<Service>();
+    public Category Category { get; set; } = null!;
 }

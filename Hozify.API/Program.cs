@@ -5,6 +5,9 @@ using Hozify.Application.Features.Auth.Interfaces;
 using Hozify.Application.Features.Categories.Interfaces;
 using Hozify.Application.Features.Categories.Mappings;
 using Hozify.Application.Features.Categories.Validators;
+using Hozify.Application.Features.Services.Interfaces;
+using Hozify.Application.Features.Services.Mappings;
+using Hozify.Application.Features.Services.Validators;
 using Hozify.Domain.Constants;
 using Hozify.Domain.Enums;
 using Hozify.Infrastructure.Data;
@@ -22,7 +25,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddAutoMapper(typeof(CategoryMappingProfile).Assembly);
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -47,6 +52,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateServiceValidator>();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {

@@ -22,4 +22,13 @@ public static class ApiMessages
     public const string CategoryAlreadyActive = "Category is already active.";
     public const string CategoryRestored = "Category restored successfully.";
 
+    // Service
+    public const string ServiceCreated = "Service created successfully.";
+    public const string ServiceUpdated = "Service updated successfully.";
+    public const string ServiceDeleted = "Service deleted successfully.";
+    public const string ServiceNotFound = "Service not found.";
+    public const string ServiceAlreadyExists = "Service already exists.";
+    public const string ServiceAlreadyActive = "Service is already active.";
+    public const string ServiceRestored = "Service restored successfully.";
+    public const string InvalidCategory = "Selected category does not exist.";
 }
