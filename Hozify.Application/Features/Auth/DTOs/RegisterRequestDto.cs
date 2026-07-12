@@ -2,11 +2,17 @@
 
 public class RegisterRequestDto
 {
-    public string FullName { get; set; } = string.Empty;
-
-    public string Email { get; set; } = string.Empty;
-
     public string PhoneNumber { get; set; } = string.Empty;
 
-    public string Password { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+
+    public string? Email { get; set; }
+
+    public int RoleId { get; set; }
+
+    public string RegistrationToken { get; set; } = string.Empty;
+
+    public string? DeviceId { get; set; }
+
+    public string? DeviceName { get; set; }
 }

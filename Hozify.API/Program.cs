@@ -1,15 +1,16 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hozify.API.Middleware;
+using Hozify.Application.Common.Settings;
 using Hozify.Application.Features.Auth.Interfaces;
 using Hozify.Application.Features.Categories.Interfaces;
 using Hozify.Application.Features.Categories.Mappings;
 using Hozify.Application.Features.Categories.Validators;
+using Hozify.Application.Features.Partners.Interfaces;
 using Hozify.Application.Features.Services.Interfaces;
-using Hozify.Application.Features.Services.Mappings;
-using Hozify.Application.Features.Services.Validators;
 using Hozify.Domain.Constants;
 using Hozify.Domain.Enums;
+using Hozify.Infrastructure.BackgroundServices;
 using Hozify.Infrastructure.Data;
 using Hozify.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,14 +22,40 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// =============================
+// Database
+// =============================
+builder.Services.AddDbContext<HozifyDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// =============================
+// JWT Settings
+// =============================
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection(JwtSettings.SectionName));
+
+// =============================
+// Dependency Injection
+// =============================
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<IPartnerService, PartnerService>();
+builder.Services.AddScoped<IOtpService, OtpService>();
+builder.Services.AddScoped<IBackgroundCleanupService, BackgroundCleanupService>();
+
+builder.Services.AddHostedService<CleanupHostedService>();
+
+// =============================
+// AutoMapper
+// =============================
 builder.Services.AddAutoMapper(typeof(CategoryMappingProfile).Assembly);
 
-
+// =============================
+// Authentication
+// =============================
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -43,17 +70,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["JwtSettings:Audience"],
 
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!))
+                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!)),
+
+            ClockSkew = TimeSpan.Zero
         };
     });
 
 builder.Services.AddAuthorization();
 
+// =============================
+// Controllers
+// =============================
 builder.Services.AddControllers();
+
+// =============================
+// Fluent Validation
+// =============================
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateServiceValidator>();
 
+// =============================
+// Custom Validation Response
+// =============================
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -79,8 +117,11 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// =============================
+// Swagger
+// =============================
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -109,13 +150,11 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddDbContext<HozifyDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// =============================
+// Middleware Pipeline
+// =============================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -123,8 +162,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();

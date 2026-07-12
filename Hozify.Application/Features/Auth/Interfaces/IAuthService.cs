@@ -4,7 +4,13 @@ namespace Hozify.Application.Features.Auth.Interfaces;
 
 public interface IAuthService
 {
-    Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request);
+    Task<ApiResponse<object>> SendOtpAsync(SendOtpRequestDto request);
 
-    Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
+    Task<ApiResponse<VerifyOtpResponseDto>> VerifyOtpAsync(VerifyOtpRequestDto request);
+
+    Task<ApiResponse<AuthResponseDto>> RegisterAsync(RegisterRequestDto request);
+
+    Task<ApiResponse<AuthResponseDto>> RefreshTokenAsync(RefreshTokenRequestDto request);
+
+    Task<ApiResponse<object>> LogoutAsync(LogoutRequestDto request);
 }

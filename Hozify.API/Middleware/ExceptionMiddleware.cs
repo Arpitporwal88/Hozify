@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Hozify.Application.Common;
+﻿using Hozify.Application.Common;
 using Hozify.Domain.Constants;
 using Hozify.Domain.Enums;
 
@@ -24,6 +23,23 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+
+        // Business Exceptions
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, ex.Message);
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)ApiStatusCode.BadRequest;
+
+            var response = ResponseFactory.Failure<object>(
+                ex.Message,
+                ApiStatusCode.BadRequest);
+
+            await context.Response.WriteAsJsonAsync(response);
+        }
+
+        // Unexpected Exceptions
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);

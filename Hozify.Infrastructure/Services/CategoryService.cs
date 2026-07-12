@@ -115,8 +115,6 @@ public class CategoryService : ICategoryService
 
         _mapper.Map(request, category);
 
-        category.UpdatedAt = DateTime.UtcNow;
-
         await _context.SaveChangesAsync();
 
         var response = _mapper.Map<CategoryResponseDto>(category);
@@ -139,7 +137,6 @@ public class CategoryService : ICategoryService
         }
 
         category.IsDeleted = true;
-        category.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -169,7 +166,6 @@ public class CategoryService : ICategoryService
         }
 
         category.IsDeleted = false;
-        category.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 

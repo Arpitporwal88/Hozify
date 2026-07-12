@@ -1,13 +1,11 @@
 ﻿using Hozify.Application.Features.Auth.DTOs;
 using Hozify.Application.Features.Auth.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Hozify.API.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -17,52 +15,48 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    [HttpPost("send-otp")]
+    public async Task<IActionResult> SendOtp(
+        [FromBody] SendOtpRequestDto request)
+    {
+        var result = await _authService.SendOtpAsync(request);
+
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost("verify-otp")]
+    public async Task<IActionResult> VerifyOtp(
+        [FromBody] VerifyOtpRequestDto request)
+    {
+        var result = await _authService.VerifyOtpAsync(request);
+
+        return StatusCode(result.StatusCode, result);
+    }
+
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequestDto request)
+    public async Task<IActionResult> Register(
+        [FromBody] RegisterRequestDto request)
     {
         var result = await _authService.RegisterAsync(request);
 
-        return Ok(result);
+        return StatusCode(result.StatusCode, result);
     }
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginRequestDto request)
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken(
+        [FromBody] RefreshTokenRequestDto request)
     {
-        var result = await _authService.LoginAsync(request);
+        var result = await _authService.RefreshTokenAsync(request);
 
-        return Ok(result);
+        return StatusCode(result.StatusCode, result);
     }
 
-    [Authorize]
-    [HttpGet("profile")]
-    public IActionResult Profile()
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(
+        [FromBody] LogoutRequestDto request)
     {
-        return Ok(new
-        {
-            Message = "You are authorized."
-        });
-    }
+        var result = await _authService.LogoutAsync(request);
 
-    [Authorize]
-    [HttpGet("me")]
-    public IActionResult GetCurrentUser()
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var email = User.FindFirst(ClaimTypes.Email)?.Value;
-        var fullName = User.FindFirst(ClaimTypes.Name)?.Value;
-
-        return Ok(new
-        {
-            Id = userId,
-            FullName = fullName,
-            Email = email
-        });
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet("admin")]
-    public IActionResult AdminOnly()
-    {
-        return Ok("Welcome Admin");
+        return StatusCode(result.StatusCode, result);
     }
 }

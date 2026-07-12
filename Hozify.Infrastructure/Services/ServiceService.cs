@@ -5,6 +5,7 @@ using Hozify.Application.Features.Services.Interfaces;
 using Hozify.Domain.Constants;
 using Hozify.Domain.Entities;
 using Hozify.Domain.Enums;
+using Hozify.Domain.Common;
 using Hozify.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -143,7 +144,6 @@ public class ServiceService : IServiceService
 
         _mapper.Map(request, service);
 
-        service.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -172,8 +172,7 @@ public class ServiceService : IServiceService
         }
 
         service.IsDeleted = true;
-        service.UpdatedAt = DateTime.UtcNow;
-
+        service.UpdatedAt = AppDateTime.Now;
         await _context.SaveChangesAsync();
 
         return ResponseFactory.Success(
